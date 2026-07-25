@@ -45,6 +45,8 @@ def index():
 def status():
     hub = _hub()
     try:
+        spent = hub.usage_totals()["cost_usd_est"]
+        earned = hub.earned_total()
         return {
             "counts": {
                 "candidates": len(hub.candidates()),
@@ -52,7 +54,104 @@ def status():
                 "rejected": len(hub.rejected()),
             },
             "usage": hub.usage_totals(),
+            "ledger": {"earned": earned, "spent": spent, "net": round(earned - spent, 2)},
             "profile": load_profile(),
+        }
+    finally:
+        hub.close()
+
+
+@app.get("/api/scanfield")
+def scanfield():
+    """The org's coverage as a graph: the Gate at the center, the agents
+    (lit when they've acted today), and the sources being watched — the good
+    ones scanned, the known-scam domains the gate blocks flagged red."""
+    from engine.beats import BEATS
+    from cli import load_trust_config
+
+    hub = _hub()
+    try:
+        by_actor = hub.activity_by_actor()
+        agents = [
+            {"name": actor, "active": by_actor.get(actor, {}).get("today_count", 0) > 0}
+            for actor, role, layer, job in ROSTER
+            if role != "scaffold"
+        ]
+        watched = sorted({d for b in BEATS.values() for d in b.allowed_domains})
+        blocked = load_trust_config().get("known_scam_domains", [])
+        sources = [{"name": d, "flagged": False} for d in watched] + [
+            {"name": d, "flagged": True} for d in blocked
+        ]
+        return {"gate": "The Gate", "agents": agents, "sources": sources}
+    finally:
+        hub.close()
+
+
+@app.get("/api/tonight")
+def tonight():
+    """Tonight's mission as structured data, with each item's plain-English
+    line from the Explainer and its deterministic score."""
+    from hunter_engine.mission import build_mission
+    from engine.agents.explainer import latest_explanation
+
+    hub = _hub()
+    try:
+        m = build_mission(hub, load_profile())
+        plain = latest_explanation().get("plain", {})
+        items = [
+            {
+                "name": o.name,
+                "type": o.type,
+                "sub": o.jurisdiction,
+                "minutes": o.time_minutes_est,
+                "cost": o.cost_usd_est,
+                "score": o.scores.total,
+                "plain": plain.get(o.id),
+                "source": str(o.sources[0].url) if o.sources else None,
+            }
+            for o in m.items
+        ]
+        return {
+            "items": items,
+            "time_used": m.time_used_minutes,
+            "time_budget": m.time_budget_minutes,
+            "money_used": m.money_used_usd,
+            "money_budget": m.money_budget_usd,
+        }
+    finally:
+        hub.close()
+
+
+@app.get("/api/explain/latest")
+def latest_explain():
+    from engine.agents.explainer import latest_explanation
+    from engine.explain_templates import REJECTION_TEMPLATES
+    from hunter_engine.explain import plain_rejection
+
+    hub = _hub()
+    try:
+        exp = latest_explanation()
+        verified = [
+            {
+                "id": o.id,
+                "name": o.name,
+                "type": o.type,
+                "sub": o.jurisdiction,
+                "plain": exp.get("plain", {}).get(o.id),
+                "time_minutes_est": o.time_minutes_est,
+                "cost_usd_est": o.cost_usd_est,
+            }
+            for o in hub.verified()
+        ]
+        rejected = [
+            {"name": o.name, "reason": plain_rejection(o, templates=REJECTION_TEMPLATES)}
+            for o in hub.rejected()
+        ]
+        return {
+            "glossary": exp.get("glossary", {}),
+            "verified": verified,
+            "rejected": rejected,
+            "date": exp.get("date"),
         }
     finally:
         hub.close()

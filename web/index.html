@@ -1,79 +1,340 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Free Money Hunter AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:#0a0e14; --panel:#111722; --line:#1e2733; --ink:#e6edf3;
-    --dim:#8b98a9; --acc:#34d399; --green:#34d399; --red:#f87171;
-    --mono:ui-monospace,SFMono-Regular,Menlo,monospace; --sans:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  }
-  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;}
-  a{color:var(--acc);}
-  .wrap{max-width:960px;margin:0 auto;padding:40px 22px 100px;}
-  header{margin-bottom:28px;}
-  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:10px;}
-  h1{font-size:32px;margin:0 0 8px;}
-  .sub{color:var(--dim);font-size:15px;}
-  .stats{display:flex;gap:14px;margin:22px 0;flex-wrap:wrap;}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-family:var(--mono);}
-  .stat b{font-size:20px;display:block;color:var(--acc);}
-  .stat span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}
-  h2{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin:40px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px;}
-  pre{white-space:pre-wrap;font-family:var(--sans);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;font-size:14.5px;}
-  .feed{font-family:var(--mono);font-size:12.5px;}
-  .feed .row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);color:var(--dim);}
-  .feed .row b{color:var(--ink);}
-  .empty{color:var(--dim);font-style:italic;}
+:root{--void:#0a0e0c;--bone:#ece7d8;--dim:#7f8c84;--faint:#465049;
+--signal:#4ade80;--threat:#ff5c49;--safe:#77e0b0;
+--disp:'Space Grotesk',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--void);color:var(--bone);font-family:var(--mono);font-size:14px;line-height:1.5}
+.herowrap{position:relative;height:100vh;min-height:660px;overflow:hidden}
+#scene{position:absolute;inset:0;z-index:0}
+.vig{position:absolute;inset:0;z-index:1;pointer-events:none;
+background:radial-gradient(ellipse 62% 55% at 50% 42%,transparent 0%,rgba(10,14,12,.5) 68%,rgba(10,14,12,.9) 100%)}
+.app{position:relative;z-index:2;max-width:1220px;margin:0 auto;padding:24px 30px}
+.detail{position:relative;z-index:2;background:var(--void);border-top:1px solid rgba(35,48,41,.6)}
+.detailin{max-width:1220px;margin:0 auto;padding:44px 30px 60px}
+
+.top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
+.mark{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:.01em}
+.mark b{color:var(--signal)}
+.tag{font-size:11px;color:var(--dim);letter-spacing:.32em;text-transform:uppercase;margin-top:6px}
+.right{text-align:right}
+.live{display:inline-flex;align-items:center;gap:7px;color:var(--safe);font-size:12px}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--safe);animation:beat 1.9s infinite}
+@keyframes beat{0%,100%{opacity:.3}50%{opacity:1}}
+.ledger{display:flex;gap:20px;justify-content:flex-end;margin-top:12px}
+.led{text-align:right}.led .k{font-size:10px;color:var(--dim);letter-spacing:.16em;text-transform:uppercase}
+.led .v{font-family:var(--disp);font-weight:700;font-size:20px;line-height:1.2}
+.led.earn .v{color:var(--safe)}.led.net.neg .v{color:var(--threat)}.led.net.pos .v{color:var(--safe)}
+.warn{font-size:10.5px;color:var(--faint);letter-spacing:.05em;margin-top:4px;text-align:right}
+
+.stage{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding:0 14px 16px;pointer-events:none}
+.stage .panel{width:min(38%,440px);pointer-events:auto}
+.panel{background:rgba(10,14,12,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+border:1px solid rgba(35,48,41,.7);padding:20px}
+.lbl{font-size:11px;color:var(--dim);letter-spacing:.28em;text-transform:uppercase;margin-bottom:15px;display:flex;justify-content:space-between}
+.lbl b{color:var(--faint);font-weight:400}
+
+.op{position:relative;border-left:2px solid var(--signal);padding:11px 14px 12px 16px;margin-bottom:11px;background:linear-gradient(90deg,rgba(74,222,128,.07),transparent 55%)}
+.op:last-child{margin-bottom:0}
+.op .idx{position:absolute;right:12px;top:6px;font-family:var(--disp);font-weight:700;font-size:30px;color:rgba(255,255,255,.05)}
+.op h3{font-family:var(--disp);font-weight:500;font-size:16px;margin:0 0 2px}
+.op .meta{font-size:10.5px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px}
+.op p{margin:0;color:#c9c6ba;font-size:12.5px;max-width:90%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.op .sc{position:absolute;right:14px;bottom:11px;font-family:var(--disp);font-weight:700;font-size:14px;color:var(--signal)}
+.empty{color:var(--dim);font-style:italic;font-size:13px}
+
+.feed{display:flex;flex-direction:column}
+.fe{padding:8px 0 8px 15px;position:relative;font-size:12px;border-left:1px solid rgba(35,48,41,.7);animation:rise .5s ease both}
+.fe::before{content:"";position:absolute;left:-4px;top:13px;width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.fe.sig::before{background:var(--signal)}.fe.saf::before{background:var(--safe)}.fe.thr::before{background:var(--threat)}
+.fe .who{font-family:var(--disp);font-weight:500}.fe .vb{color:var(--signal)}.fe.saf .vb{color:var(--safe)}.fe.thr .vb{color:var(--threat)}
+.fe .t{color:var(--faint);font-size:10px}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+.stamp{display:inline-block;border:1.5px solid var(--threat);color:var(--threat);font-family:var(--disp);font-weight:700;font-size:10.5px;letter-spacing:.13em;padding:2px 8px;transform:rotate(-3deg);margin-top:14px;opacity:.9}
+
+.scrollhint{position:absolute;left:0;right:0;bottom:16px;z-index:2;text-align:center;color:var(--faint);font-size:11px;letter-spacing:.2em;animation:beat 2.6s infinite;pointer-events:none}
+.sec{border-bottom:1px solid rgba(35,48,41,.55)}
+.sec>.hd{cursor:pointer;display:flex;align-items:baseline;gap:14px;padding:18px 2px}
+.sec>.hd h2{font-family:var(--disp);font-weight:500;font-size:17px;margin:0;letter-spacing:.02em}
+.sec>.hd .sub{font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin:0}
+.sec>.hd .cnt{margin-left:auto;color:var(--faint);font-size:11px;letter-spacing:.08em}
+.sec>.hd .chev{color:var(--dim);transition:transform .2s;font-size:12px}
+.sec.open>.hd .chev{transform:rotate(90deg)}
+.sec>.body{display:none;padding:4px 2px 26px}
+.sec.open>.body{display:block}
+.showall{display:inline-block;margin-top:14px;color:var(--signal);cursor:pointer;font-size:12px;letter-spacing:.04em}
+.showall:hover{text-decoration:underline}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:rgba(10,14,12,.62);border:1px solid rgba(35,48,41,.7);padding:13px 16px}
+.card h4{font-family:var(--disp);font-weight:500;font-size:15px;margin:0 0 4px}
+.card p{margin:0;font-size:12.5px;color:#c9c6ba}
+.rej{font-size:12.5px;color:var(--dim);margin:7px 0;padding-left:14px;border-left:2px solid var(--threat)}
+.rej b{color:var(--bone);font-weight:500}
+.gl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:12.5px;margin-top:6px}
+.gl dt{color:var(--signal);font-family:var(--disp);font-weight:500}
+.gl dd{margin:0;color:#c9c6ba}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{text-align:left;color:var(--dim);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 10px;border-bottom:1px solid rgba(35,48,41,.7)}
+td{padding:9px 10px;border-bottom:1px solid rgba(35,48,41,.4);vertical-align:top}
+.badge{font-size:10px;padding:2px 8px;letter-spacing:.06em;text-transform:uppercase;border:1px solid}
+.badge.verified{color:var(--safe);border-color:var(--safe)}.badge.rejected{color:var(--threat);border-color:var(--threat)}.badge.candidate{color:var(--dim);border-color:var(--faint)}
+.dbt{margin:0 0 16px}.dbt h4{font-family:var(--disp);font-weight:500;font-size:14px;margin:0 0 6px;display:flex;gap:10px;align-items:center}
+.stance{display:grid;grid-template-columns:110px 78px 1fr;gap:8px;font-size:12px;padding:4px 0}
+.stance .r{font-family:var(--disp);font-weight:500}.pos-endorse{color:var(--safe)}.pos-caution{color:var(--signal)}.pos-oppose{color:var(--threat)}
+.foot{margin-top:60px;border-top:1px solid rgba(35,48,41,.7);padding-top:14px;font-size:10.5px;color:var(--faint);letter-spacing:.06em;text-align:center}
 </style>
 </head>
 <body>
-<div class="wrap">
-<header>
-  <div class="kicker">Free Money Hunter AI</div>
-  <h1>The daily hunt for unclaimed money</h1>
-  <div class="sub">Official-registry gate — near-binary by design. Almost nothing left to debate once it passes.</div>
-</header>
+<div class="herowrap">
+<canvas id="scene"></canvas>
+<div class="vig"></div>
 
-<div class="stats" id="stats"></div>
-
-<h2>Tonight's mission</h2>
-<pre id="mission" class="empty">Loading…</pre>
-
-<h2>Digest</h2>
-<pre id="digest" class="empty">Loading…</pre>
-
-<h2>The army</h2>
-<div class="feed" id="feed"></div>
-
-<script>
-async function j(url){ const r = await fetch(url); return r.json(); }
-
-async function load(){
-  const status = await j('/api/status');
-  document.getElementById('stats').innerHTML = `
-    <div class="stat"><b>${status.counts.verified}</b><span>verified</span></div>
-    <div class="stat"><b>${status.counts.rejected}</b><span>rejected</span></div>
-    <div class="stat"><b>${status.counts.candidates}</b><span>candidates</span></div>
-    <div class="stat"><b>$${status.usage.cost_usd_est}</b><span>spent</span></div>
-  `;
-
-  const mission = await j('/api/mission/latest');
-  document.getElementById('mission').textContent = mission.markdown || 'No mission generated yet — run `python cli.py day`.';
-
-  const digest = await j('/api/digest/latest');
-  document.getElementById('digest').textContent = digest.markdown || 'No digest generated yet.';
-
-  const army = await j('/api/army');
-  const feed = army.feed || [];
-  document.getElementById('feed').innerHTML = feed.length
-    ? feed.map(e => `<div class="row"><span>${e.at ? e.at.slice(11,19) : ''}</span><b>${e.actor}</b><span>${e.action}${e.detail ? ' — ' + e.detail : ''}</span></div>`).join('')
-    : '<div class="empty">No activity yet.</div>';
-}
-load();
-</script>
+<div class="app">
+  <div class="top">
+    <div><div class="mark">FREE MONEY HUNTER<b>/</b>AI</div><div class="tag">unclaimed-money intelligence</div></div>
+    <div class="right">
+      <div class="live"><span class="pulse"></span><span id="livetxt">the hunt is live</span></div>
+      <div class="ledger" id="ledger"></div>
+      <div class="warn">the hunt must earn more than it spends</div>
+    </div>
+  </div>
 </div>
+
+<div class="stage">
+  <div class="panel"><div class="lbl">TONIGHT'S ORDERS <b id="budget"></b></div><div id="orders"></div></div>
+  <div class="panel"><div class="lbl">THE HUNT <b>LIVE</b></div><div class="feed" id="feed"></div><div id="stamp"></div></div>
+</div>
+<div class="scrollhint">▾ SCROLL INTO THE HUNT</div>
+</div>
+
+<div class="detail"><div class="detailin">
+  <div class="sec" id="sec-explain"><div class="hd"><h2>Explain it to me</h2><span class="sub">plain english</span><span class="cnt" id="cnt-explain"></span><span class="chev">▸</span></div>
+    <div class="body"><div class="grid2" id="explain"></div>
+      <div id="rejected" style="margin-top:18px"></div>
+      <div id="glossary" style="margin-top:22px"></div></div></div>
+
+  <div class="sec" id="sec-leads"><div class="hd"><h2>Every lead</h2><span class="sub">found · gated</span><span class="cnt" id="cnt-leads"></span><span class="chev">▸</span></div>
+    <div class="body"><div id="leads"></div></div></div>
+
+  <div class="sec" id="sec-debate"><div class="hd"><h2>The debate</h2><span class="sub">argued before recommended</span><span class="cnt" id="cnt-debate"></span><span class="chev">▸</span></div>
+    <div class="body"><div id="debate"></div></div></div>
+
+  <div class="foot">INTELLIGENCE, NOT ADVICE · NEVER FILES CLAIMS FOR YOU · NEVER HOLDS YOUR MONEY · EVERY VERDICT CARRIES EVIDENCE</div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const j=async u=>(await fetch(u)).json();
+function ago(iso){if(!iso)return"";let s=Math.max(0,(Date.now()-new Date(iso).getTime())/1000);
+ if(s<60)return Math.floor(s)+"s";if(s<3600)return Math.floor(s/60)+"m";if(s<86400)return Math.floor(s/3600)+"h";return Math.floor(s/86400)+"d";}
+
+let grp,gate,paths=[],camReady=false,sc,cam,rn;
+function initField(data){
+ const cv=$("#scene"),host=cv.parentElement;
+ const W=()=>host.clientWidth,H=()=>host.clientHeight;
+ rn=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+ rn.setPixelRatio(Math.min(devicePixelRatio,2));rn.setSize(W(),H());
+ sc=new THREE.Scene();sc.fog=new THREE.FogExp2(0x0a0e0c,0.032);
+ cam=new THREE.PerspectiveCamera(50,W()/H(),.1,100);cam.position.set(0,0,17);
+ grp=new THREE.Group();sc.add(grp);
+
+ const composer=new THREE.EffectComposer(rn);
+ composer.addPass(new THREE.RenderPass(sc,cam));
+ const bloom=new THREE.UnrealBloomPass(new THREE.Vector2(W(),H()),0.85,0.42,0.18);
+ composer.addPass(bloom);
+ const glowMat=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,blending:THREE.AdditiveBlending,depthWrite:false});
+
+ const dN=460,dp=new Float32Array(dN*3);
+ for(let i=0;i<dN;i++){const r=5+Math.random()*13,th=Math.random()*6.283,ph=Math.acos(2*Math.random()-1);
+  dp[i*3]=r*Math.sin(ph)*Math.cos(th);dp[i*3+1]=r*Math.sin(ph)*Math.sin(th);dp[i*3+2]=r*Math.cos(ph);}
+ const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(dp,3));
+ const dust=new THREE.Points(dg,new THREE.PointsMaterial({color:0x8aa38f,size:0.055,transparent:true,opacity:.45,blending:THREE.AdditiveBlending,depthWrite:false}));
+ grp.add(dust);
+
+ const glowNodes=[],spinNodes=[];
+ function geom(shape,size){
+  if(shape==='icosa')return new THREE.IcosahedronGeometry(size,0);
+  if(shape==='octa')return new THREE.OctahedronGeometry(size,0);
+  if(shape==='box')return new THREE.BoxGeometry(size*1.4,size*1.4,size*1.4);
+  return new THREE.SphereGeometry(size,20,20);}
+ function mk(color,size,pos,glow,shape,spin){
+  const g0=geom(shape,size);
+  const core=new THREE.Mesh(g0,new THREE.MeshBasicMaterial({color,transparent:true,opacity:.5}));
+  core.position.copy(pos);grp.add(core);
+  const edges=new THREE.LineSegments(new THREE.EdgesGeometry(geom(shape,size*1.16)),
+   new THREE.LineBasicMaterial({color,transparent:true,opacity:.95,blending:THREE.AdditiveBlending}));
+  edges.position.copy(pos);grp.add(edges);
+  const g=new THREE.Mesh(new THREE.SphereGeometry(size*2.7,16,16),glowMat(color,glow));g.position.copy(pos);grp.add(g);
+  glowNodes.push({g,base:glow,phase:Math.random()*6.283});
+  core.userData.edges=edges;
+  if(spin!==false&&shape&&shape!=='sphere')spinNodes.push({m:core,sx:(Math.random()-.5)*.009,sy:.005+Math.random()*.008});
+  return core;}
+
+ gate=mk(0x77e0b0,.62,new THREE.Vector3(0,0,0),.26,'icosa',false);
+ const ringA=new THREE.Mesh(new THREE.TorusGeometry(1.15,.028,8,60),glowMat(0x77e0b0,.55));grp.add(ringA);
+ const ringB=new THREE.Mesh(new THREE.TorusGeometry(1.55,.02,8,60),glowMat(0x77e0b0,.32));ringB.rotation.x=1.15;grp.add(ringB);
+
+ const domeGrp=new THREE.Group();grp.add(domeGrp);
+ const domeMat=new THREE.LineBasicMaterial({color:0x3d5346,transparent:true,opacity:.34,blending:THREE.AdditiveBlending});
+ const DR=10.6;
+ for(let i=0;i<6;i++){
+  const y=DR*Math.cos(Math.PI*(i+1)/7),r=DR*Math.sin(Math.PI*(i+1)/7);
+  const pts=[];for(let k=0;k<=64;k++){const a=k/64*6.283;pts.push(new THREE.Vector3(Math.cos(a)*r,y,Math.sin(a)*r));}
+  const ring=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),domeMat);domeGrp.add(ring);}
+ for(let i=0;i<5;i++){
+  const rotY=i/5*Math.PI,pts=[];
+  for(let k=0;k<=64;k++){const a=k/64*6.283;pts.push(new THREE.Vector3(Math.cos(a)*Math.sin(rotY)*DR,Math.sin(a)*DR,Math.cos(a)*Math.cos(rotY)*DR));}
+  const ring=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),domeMat);domeGrp.add(ring);}
+ const orbit=new THREE.Mesh(new THREE.TorusGeometry(4.6,.012,6,96),glowMat(0x4ade80,.16));orbit.rotation.x=Math.PI/2;grp.add(orbit);
+
+ const agents=data.agents,aN=agents.length,A=[];
+ agents.forEach((a,i)=>{const t=i/aN*6.283;
+  A.push(mk(a.active?0x4ade80:0x2f5a3f,a.active?.3:.22,new THREE.Vector3(Math.cos(t)*4.6,0,Math.sin(t)*4.6),a.active?.19:.06,'octa'));});
+
+ const srcs=data.sources,sN=srcs.length,GA=Math.PI*(3-Math.sqrt(5)),SR=9.4;
+ srcs.forEach((s,i)=>{const yy=1-(i/Math.max(sN-1,1))*2,rad=Math.sqrt(Math.max(0,1-yy*yy)),th=GA*i;
+  const n=mk(s.flagged?0xff5c49:0x6a7a70,s.flagged?.24:.18,
+   new THREE.Vector3(Math.cos(th)*rad*SR,yy*SR,Math.sin(th)*rad*SR),s.flagged?.24:.08,'box');
+  curvedLink(n,A[i%Math.max(aN,1)]||gate,s.flagged?0xff5c49:0x4a5a4a,s.flagged?.4:.13);});
+ A.forEach(a=>curvedLink(a,gate,0x4ade80,.2));
+
+ function curvedLink(a,b,color,op){
+  const mid=a.position.clone().add(b.position).multiplyScalar(.5).multiplyScalar(1.18);
+  const curve=new THREE.QuadraticBezierCurve3(a.position.clone(),mid,b.position.clone());
+  grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(26)),
+   new THREE.LineBasicMaterial({color,transparent:true,opacity:op,blending:THREE.AdditiveBlending})));
+  for(let k=0;k<2;k++){
+   const TAIL=5,tail=[];
+   for(let s=0;s<TAIL;s++){const pm=new THREE.Mesh(new THREE.SphereGeometry(.09,8,8),glowMat(color,.9*(1-s/TAIL)));grp.add(pm);tail.push(pm);}
+   paths.push({curve,tail,t:k*.5+Math.random()*.25,sp:.0045+Math.random()*.005,hist:[]});}}
+
+ const pings=[];
+ function ping(pos,color){let p=pings.find(x=>!x.on);
+  if(!p){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,20),
+   new THREE.MeshBasicMaterial({color,transparent:true,opacity:.4,wireframe:true,blending:THREE.AdditiveBlending,depthWrite:false}));grp.add(m);p={m,on:false};pings.push(p);}
+  p.m.material.color.setHex(color);p.m.position.copy(pos);p.on=true;p.t=0;}
+
+ let dx=0,dy=.12,down=false,px,py;
+ cv.addEventListener("pointerdown",e=>{down=true;px=e.clientX;py=e.clientY});
+ addEventListener("pointerup",()=>down=false);
+ addEventListener("pointermove",e=>{if(!down)return;dx+=(e.clientX-px)*.005;dy+=(e.clientY-py)*.004;px=e.clientX;py=e.clientY});
+ addEventListener("resize",()=>{cam.aspect=W()/H();cam.updateProjectionMatrix();rn.setSize(W(),H());composer.setSize(W(),H());});
+
+ const v=new THREE.Vector3();let lastPing=-2000;
+ (function loop(){requestAnimationFrame(loop);const tm=performance.now();
+  grp.rotation.y=dx+tm*0.00006;grp.rotation.x=dy;
+  cam.position.x=Math.sin(tm*0.00016)*0.45;cam.position.y=Math.cos(tm*0.00012)*0.28;cam.lookAt(0,0,0);
+  gate.scale.setScalar(1+Math.sin(tm*.003)*.11);
+  gate.rotation.y=tm*0.0004;gate.rotation.x=Math.sin(tm*.0003)*.5;
+  gate.userData.edges.rotation.copy(gate.rotation);gate.userData.edges.scale.copy(gate.scale);
+  domeGrp.rotation.y=tm*0.00002;
+  spinNodes.forEach(n=>{n.m.rotation.x+=n.sx;n.m.rotation.y+=n.sy;n.m.userData.edges.rotation.copy(n.m.rotation);});
+  ringA.rotation.z=tm*0.0006;ringA.rotation.y=tm*0.0004;ringB.rotation.z=-tm*0.0005;ringB.rotation.x=1.15+Math.sin(tm*.0005)*.3;
+  dust.rotation.y=-tm*0.00003;
+  glowNodes.forEach(n=>{n.g.material.opacity=n.base*(0.65+0.55*(0.5+0.5*Math.sin(tm*.002+n.phase)));});
+  paths.forEach(p=>{p.t+=p.sp;if(p.t>1){p.t=0;p.hist.length=0;}
+   p.curve.getPoint(p.t,v);p.hist.unshift(v.clone());if(p.hist.length>p.tail.length)p.hist.pop();
+   p.tail.forEach((pm,i)=>{const pt=p.hist[i];if(pt){pm.visible=true;pm.position.copy(pt);
+    pm.scale.setScalar((1-i/p.tail.length)*(0.7+0.7*Math.sin(p.t*Math.PI)));}else pm.visible=false;});});
+  if(tm-lastPing>3400){lastPing=tm;ping(gate.position,0x77e0b0);}
+  pings.forEach(p=>{if(!p.on)return;p.t+=0.03;p.m.scale.setScalar(1+p.t*8);p.m.material.opacity=Math.max(0,.24*(1-p.t));if(p.t>=1)p.on=false;});
+  composer.render();})();
+}
+
+function feedClass(role,action){const a=(action||"").toLowerCase();
+ if(/reject|turn|flag|red/.test(a))return"thr";if(/verif|confirm/.test(a))return"saf";return"sig";}
+
+async function loadHero(){
+ const st=await j("/api/status");
+ const L=st.ledger,neg=L.net<0;
+ $("#ledger").innerHTML=
+  `<div class="led earn"><div class="k">earned</div><div class="v">$${L.earned.toFixed(2)}</div></div>`+
+  `<div class="led"><div class="k">spent</div><div class="v">$${L.spent.toFixed(2)}</div></div>`+
+  `<div class="led net ${neg?'neg':'pos'}"><div class="k">net</div><div class="v">${neg?'−':'+'}$${Math.abs(L.net).toFixed(2)}</div></div>`;
+ $("#livetxt").textContent=`the hunt is live · ${st.counts.verified} verified · ${st.counts.rejected} turned away`;
+
+ const T=await j("/api/tonight");
+ $("#budget").textContent=`~${T.time_used} MIN · $${T.money_used}`;
+ if(!T.items.length){$("#orders").innerHTML=`<div class="empty">Nothing cleared your time and budget tonight — that's the system protecting you, not a failure.</div>`;}
+ else $("#orders").innerHTML=T.items.map((o,i)=>`
+  <div class="op"><div class="idx">${String(i+1).padStart(2,'0')}</div>
+   <h3>${o.name}</h3>
+   <div class="meta">${o.type}${o.sub?' · '+o.sub:''} · ${o.minutes!=null?o.minutes+' min':'?'} · $${o.cost!=null?o.cost:'?'}</div>
+   <p>${o.plain||''}</p>${o.score!=null?`<div class="sc">${o.score}</div>`:''}</div>`).join("");
+
+ const army=await j("/api/army");
+ $("#feed").innerHTML=army.feed.slice(0,7).map(e=>`
+  <div class="fe ${feedClass(e.role,e.action)}"><span class="who">${e.actor}</span> <span class="vb">${e.action}</span> `+
+  `<span style="color:#c9c6ba">${e.detail?'— '+e.detail:''}</span> <span class="t">${ago(e.at)}</span></div>`).join("");
+ const flagged=army.feed.find(e=>/flag|reject|turn/.test((e.action||'').toLowerCase()));
+ $("#stamp").innerHTML=flagged?`<div class="stamp">✕ ${(flagged.detail||flagged.action).split(':')[0].toUpperCase()} — TURNED AWAY</div>`:"";
+}
+
+function capped(items, cap, render, container, noun){
+ let shown=cap;
+ function paint(){container.innerHTML=render(items.slice(0,shown))+
+  (shown<items.length?`<span class="showall">+ ${items.length-shown} more ${noun} — show all ▾</span>`:"");
+  const b=container.querySelector('.showall');if(b)b.onclick=()=>{shown=items.length;paint();};}
+ paint();
+}
+
+async function loadDetail(){
+ const e=await j("/api/explain/latest");
+ const plain=e.verified.filter(v=>v.plain);
+ $("#explain").innerHTML=plain.map(v=>`<div class="card"><h4>${v.name}</h4><p>${v.plain}</p></div>`).join("")||`<div class="empty">Run the hunt to populate explanations.</div>`;
+ $("#rejected").innerHTML=e.rejected.length?`<div class="sub" style="margin-bottom:8px">KEPT OFF YOUR LIST</div>`+
+  e.rejected.map(r=>`<div class="rej"><b>${r.name}</b> — ${r.reason}</div>`).join(""):"";
+ const terms=Object.entries(e.glossary||{});
+ $("#cnt-explain").textContent=`${plain.length} explained · ${terms.length} terms`;
+ if(terms.length){
+  const gwrap=$("#glossary");gwrap.innerHTML=`<div class="sub" style="margin-bottom:8px">GLOSSARY</div><div id="glbody"></div>`;
+  capped(terms,20,arr=>`<dl class="gl">`+arr.map(([t,d])=>`<dt>${t}</dt><dd>${d}</dd>`).join("")+`</dl>`,$("#glbody"),"terms");
+ } else $("#glossary").innerHTML="";
+
+ const ops=await j("/api/opportunities");
+ ops.sort((a,b)=>(score(b)??-1)-(score(a)??-1));
+ $("#cnt-leads").textContent=`${ops.length} leads`;
+ capped(ops,12,arr=>`<table><tr><th>lead</th><th>trust</th><th>score</th><th>time</th><th>cost</th></tr>`+
+  arr.map(o=>`<tr><td><b>${o.name}</b><br><span style="color:var(--dim);font-size:11px">${o.type}${o.jurisdiction?' · '+o.jurisdiction:''}</span></td>`+
+  `<td><span class="badge ${o.trust_status}">${o.trust_status}</span></td>`+
+  `<td style="color:var(--signal)">${score(o)!=null?score(o)+'/90':'—'}</td>`+
+  `<td>${o.time_minutes_est!=null?'~'+o.time_minutes_est+'m':'?'}</td>`+
+  `<td>${o.cost_usd_est!=null?'$'+o.cost_usd_est:'?'}</td></tr>`).join("")+`</table>`,$("#leads"),"leads");
+
+ const st=await j("/api/debate/latest");
+ const byOpp={};st.forEach(s=>(byOpp[s.opportunity]=byOpp[s.opportunity]||[]).push(s));
+ const groups=Object.entries(byOpp);
+ $("#cnt-debate").textContent=`${groups.length} debated`;
+ if(groups.length) capped(groups,5,arr=>arr.map(([opp,list])=>`
+  <div class="dbt"><h4>${opp} <span class="badge ${list[0].trust}">${list[0].trust}</span></h4>`+
+  list.map(s=>`<div class="stance"><span class="r">${s.role}</span><span class="pos-${s.position}">${s.position}</span><span style="color:#c9c6ba">${s.argument}</span></div>`).join("")+`</div>`).join(""),$("#debate"),"debated");
+ else $("#debate").innerHTML=`<div class="empty">No debate transcript yet.</div>`;
+}
+function score(o){return o.scores&&o.scores.reward_potential!=null?o.scores.reward_potential+o.scores.risk+o.scores.time_efficiency+o.scores.cost:null;}
+
+document.querySelectorAll('.sec>.hd').forEach(hd=>hd.onclick=()=>hd.parentElement.classList.toggle('open'));
+
+(async function(){
+ initField(await j("/api/scanfield"));
+ await loadHero(); await loadDetail();
+ setInterval(loadHero,15000);
+})();
+</script>
 </body>
 </html>
