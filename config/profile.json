@@ -1,0 +1,18 @@
+{
+  "owner": "0ne29",
+  "owner_full_name": "REPLACE ME — full legal name for registry name-matching",
+  "former_addresses": [],
+  "experience": "beginner",
+  "daily_time_minutes": 60,
+  "daily_budget_usd": 0,
+  "risk_tolerance": "medium",
+  "reading_level": "beginner",
+  "min_safety_score": {
+    "low": 18,
+    "medium": 14,
+    "high": 10
+  },
+  "min_total_score": 30,
+  "max_mission_items": 3,
+  "notes": "Free money needs a time floor, not a money floor — claiming is free, the cost is paperwork minutes. owner_full_name/former_addresses are placeholders the user must fill in for the Unclaimed-Property Scout to search by identity."
+}

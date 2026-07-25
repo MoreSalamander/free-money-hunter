@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Free Money Hunter AI</title>
+<style>
+  :root {
+    --bg:#0a0e14; --panel:#111722; --line:#1e2733; --ink:#e6edf3;
+    --dim:#8b98a9; --acc:#34d399; --green:#34d399; --red:#f87171;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace; --sans:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;}
+  a{color:var(--acc);}
+  .wrap{max-width:960px;margin:0 auto;padding:40px 22px 100px;}
+  header{margin-bottom:28px;}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:10px;}
+  h1{font-size:32px;margin:0 0 8px;}
+  .sub{color:var(--dim);font-size:15px;}
+  .stats{display:flex;gap:14px;margin:22px 0;flex-wrap:wrap;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-family:var(--mono);}
+  .stat b{font-size:20px;display:block;color:var(--acc);}
+  .stat span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}
+  h2{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin:40px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px;}
+  pre{white-space:pre-wrap;font-family:var(--sans);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;font-size:14.5px;}
+  .feed{font-family:var(--mono);font-size:12.5px;}
+  .feed .row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);color:var(--dim);}
+  .feed .row b{color:var(--ink);}
+  .empty{color:var(--dim);font-style:italic;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">Free Money Hunter AI</div>
+  <h1>The daily hunt for unclaimed money</h1>
+  <div class="sub">Official-registry gate — near-binary by design. Almost nothing left to debate once it passes.</div>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<h2>Tonight's mission</h2>
+<pre id="mission" class="empty">Loading…</pre>
+
+<h2>Digest</h2>
+<pre id="digest" class="empty">Loading…</pre>
+
+<h2>The army</h2>
+<div class="feed" id="feed"></div>
+
+<script>
+async function j(url){ const r = await fetch(url); return r.json(); }
+
+async function load(){
+  const status = await j('/api/status');
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><b>${status.counts.verified}</b><span>verified</span></div>
+    <div class="stat"><b>${status.counts.rejected}</b><span>rejected</span></div>
+    <div class="stat"><b>${status.counts.candidates}</b><span>candidates</span></div>
+    <div class="stat"><b>$${status.usage.cost_usd_est}</b><span>spent</span></div>
+  `;
+
+  const mission = await j('/api/mission/latest');
+  document.getElementById('mission').textContent = mission.markdown || 'No mission generated yet — run `python cli.py day`.';
+
+  const digest = await j('/api/digest/latest');
+  document.getElementById('digest').textContent = digest.markdown || 'No digest generated yet.';
+
+  const army = await j('/api/army');
+  const feed = army.feed || [];
+  document.getElementById('feed').innerHTML = feed.length
+    ? feed.map(e => `<div class="row"><span>${e.at ? e.at.slice(11,19) : ''}</span><b>${e.actor}</b><span>${e.action}${e.detail ? ' — ' + e.detail : ''}</span></div>`).join('')
+    : '<div class="empty">No activity yet.</div>';
+}
+load();
+</script>
+</div>
+</body>
+</html>

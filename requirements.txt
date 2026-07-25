@@ -1,0 +1,8 @@
+hunter-engine @ file:///Users/0ne29/MoreSalamander/hunter-engine
+anthropic>=0.117.0
+openai>=1.0
+fastapi
+uvicorn
+httpx>=0.27
+pydantic>=2.13
+pytest>=8.0

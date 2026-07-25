@@ -1,0 +1,12 @@
+{
+  "gate_version": "gate-v0.1",
+  "min_domain_age_days": 180,
+  "min_confirmations": 1,
+  "official_domains": [
+    "missingmoney.com",
+    "ftc.gov",
+    "usa.gov",
+    "irs.gov"
+  ],
+  "known_scam_domains": []
+}

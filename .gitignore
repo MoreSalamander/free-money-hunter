@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+logs/
+data/*.db
+data/*.sqlite3
+.pytest_cache/
+.DS_Store
+data/audio/
+data/explainer/
+data/missions/
+data/digests/
