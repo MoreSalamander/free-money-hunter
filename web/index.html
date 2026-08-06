@@ -70,6 +70,16 @@ border:1px solid rgba(35,48,41,.7);padding:20px}
 .sec>.hd .chev{color:var(--dim);transition:transform .2s;font-size:12px}
 .sec.open>.hd .chev{transform:rotate(90deg)}
 .sec>.body{display:none;padding:4px 2px 26px}
+.castintro{color:var(--dim);font-size:13px;margin:2px 0 14px;max-width:620px}
+.clayer{margin:0 0 16px}
+.clh{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#4ade80;margin:0 0 8px;opacity:.85}
+.cagent{border:1px solid rgba(35,48,41,.55);border-radius:10px;padding:10px 13px;margin:0 0 8px;background:rgba(16,20,15,.5)}
+.cagent.live{border-color:rgba(240,165,44,.35)}
+.cn{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px}
+.cd{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;display:inline-block}
+.cj{color:var(--dim);font-size:12.5px;margin-top:3px;line-height:1.5}
+.cl{font-family:var(--mono,monospace);font-size:11px;color:var(--faint);margin-top:6px}
+.cl.standby{opacity:.6}
 .sec.open>.body{display:block}
 .showall{display:inline-block;margin-top:14px;color:var(--signal);cursor:pointer;font-size:12px;letter-spacing:.04em}
 .showall:hover{text-decoration:underline}
@@ -117,6 +127,9 @@ td{padding:9px 10px;border-bottom:1px solid rgba(35,48,41,.4);vertical-align:top
 </div>
 
 <div class="detail"><div class="detailin">
+  <div class="sec" id="sec-cast"><div class="hd"><h2>The cast</h2><span class="sub">the organization it takes</span><span class="cnt" id="cnt-cast"></span><span class="chev">&#9656;</span></div>
+    <div class="body"><div class="castintro" id="castintro"></div><div id="cast"></div></div></div>
+
   <div class="sec" id="sec-explain"><div class="hd"><h2>Explain it to me</h2><span class="sub">plain english</span><span class="cnt" id="cnt-explain"></span><span class="chev">▸</span></div>
     <div class="body"><div class="grid2" id="explain"></div>
       <div id="rejected" style="margin-top:18px"></div>
@@ -279,6 +292,16 @@ async function loadHero(){
    <p>${o.plain||''}</p>${o.score!=null?`<div class="sc">${o.score}</div>`:''}</div>`).join("");
 
  const army=await j("/api/army");
+ const layers=[...new Set(army.agents.map(a=>a.layer))];
+ $("#castintro").textContent=`Looking at the shell you'd never know: it takes ${army.agents.length} agents, in ${layers.length} layers, to make Free Money Hunter happen. Every one of them reports to the same office — the Free Money Hunter DataHub.`;
+ $("#cast").innerHTML=layers.map(L=>`<div class="clayer"><div class="clh">${L}</div>`+
+  army.agents.filter(a=>a.layer===L).map(a=>`
+   <div class="cagent${a.today_count>0?' live':''}">
+    <div class="cn">${a.actor}${a.today_count>0?'<span class="cd"></span>':''}</div>
+    <div class="cj">${a.job}</div>
+    ${a.last_action?`<div class="cl">last: ${a.last_action}${a.last_detail?' — '+a.last_detail:''} · ${ago(a.at)} · ${a.today_count} today</div>`:'<div class="cl standby">standing by</div>'}
+   </div>`).join('')+'</div>').join('');
+ $("#cnt-cast").textContent=`${army.agents.length} agents · ${layers.length} layers`;
  $("#feed").innerHTML=army.feed.slice(0,7).map(e=>`
   <div class="fe ${feedClass(e.role,e.action)}"><span class="who">${e.actor}</span> <span class="vb">${e.action}</span> `+
   `<span style="color:#c9c6ba">${e.detail?'— '+e.detail:''}</span> <span class="t">${ago(e.at)}</span></div>`).join("");
