@@ -1,0 +1,75 @@
+{
+ "org": "Free Money Hunter AI",
+ "generated_at": "2026-08-06T16:35:59.409795+00:00",
+ "counts": {
+  "candidates": 0,
+  "verified": 5,
+  "rejected": 0
+ },
+ "usage": {
+  "calls": 17,
+  "input_tokens": 276338,
+  "output_tokens": 19078,
+  "cost_usd_est": 0.1112
+ },
+ "top_verified": [
+  {
+   "name": "University of Phoenix Settlement",
+   "type": "government-rebate",
+   "score_total": 69,
+   "score_reward": 25,
+   "deadline": null,
+   "time_minutes_est": 5,
+   "cost_usd_est": 0.0,
+   "source": "https://www.ftc.gov/enforcement/refunds/university-phoenix-settlement"
+  },
+  {
+   "name": "Ring Refunds",
+   "type": "government-rebate",
+   "score_total": 60,
+   "score_reward": 16,
+   "deadline": null,
+   "time_minutes_est": 5,
+   "cost_usd_est": 0.0,
+   "source": "https://www.ftc.gov/enforcement/refunds/ring-refunds"
+  },
+  {
+   "name": "Trend Deploy Refunds",
+   "type": "government-rebate",
+   "score_total": 57,
+   "score_reward": 13,
+   "deadline": null,
+   "time_minutes_est": 5,
+   "cost_usd_est": 0.0,
+   "source": "https://www.ftc.gov/enforcement/refunds/trend-deploy-refunds",
+   "field": "estimated_payout_usd",
+   "value": 71.0
+  },
+  {
+   "name": "The Sales Mentor Refunds",
+   "type": "government-rebate",
+   "score_total": 56,
+   "score_reward": 12,
+   "deadline": null,
+   "time_minutes_est": 5,
+   "cost_usd_est": 0.0,
+   "source": "https://www.ftc.gov/enforcement/refunds/sales-mentor-refunds",
+   "field": "estimated_payout_usd",
+   "value": 84.0
+  },
+  {
+   "name": "Handy Technologies Settlement",
+   "type": "government-rebate",
+   "score_total": 54,
+   "score_reward": 10,
+   "deadline": null,
+   "time_minutes_est": 5,
+   "cost_usd_est": 0.0,
+   "source": "https://www.ftc.gov/enforcement/refunds/handy-technologies-settlement",
+   "field": "estimated_payout_usd",
+   "value": 43.0
+  }
+ ],
+ "latest_digest": "digest-2026-07-25.md",
+ "latest_mission": "mission-2026-07-25.md"
+}

@@ -160,6 +160,15 @@ def cmd_digest(hub: DataHub, voice: bool) -> None:
     print(f"\n[saved to {out}]")
 
 
+def cmd_showcase(hub: DataHub) -> None:
+    """The deterministic daily snapshot the Entropy OS face renders — see
+    hunter_engine.showcase. No model calls; derived from the store."""
+    from hunter_engine.showcase import write_showcase
+
+    out = write_showcase(hub, ROOT, ORG_NAME)
+    print(f"showcase written: {out}")
+
+
 def cmd_status(hub: DataHub) -> None:
     print(
         f"candidates: {len(hub.candidates())} | verified: {len(hub.verified())}"
@@ -216,6 +225,7 @@ def main() -> None:
     dayp = sub.add_parser("day")
     dayp.add_argument("--no-voice", action="store_true")
     sub.add_parser("status")
+    sub.add_parser("showcase")
     sub.add_parser("smoke")
     args = p.parse_args()
 
@@ -239,6 +249,7 @@ def main() -> None:
             cmd_gate(hub, regate=args.all)
         elif args.cmd == "mission":
             cmd_mission(hub, voice=not args.no_voice)
+            cmd_showcase(hub)
         elif args.cmd == "serve":
             import uvicorn
 
@@ -255,6 +266,8 @@ def main() -> None:
             cmd_explain(hub)
             cmd_digest(hub, voice=not args.no_voice)
             cmd_mission(hub, voice=not args.no_voice)
+        elif args.cmd == "showcase":
+            cmd_showcase(hub)
         elif args.cmd == "status":
             cmd_status(hub)
         elif args.cmd == "smoke":
