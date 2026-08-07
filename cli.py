@@ -23,6 +23,7 @@ import json
 from pathlib import Path
 
 from hunter_engine.gate import Gate, run_gate
+from hunter_engine.graph_memory import GraphMemory
 from hunter_engine.store import DataHub
 from hunter_engine.agents.scouts import run_scout
 
@@ -52,7 +53,13 @@ def load_profile() -> dict:
 
 def make_gate() -> Gate:
     config = load_trust_config()
-    return Gate(config=config, extra_checks=[make_registry_check(set(config["official_domains"]))])
+    # The read path: DATAHUB_GMS set -> every verdict carries what the
+    # archive already knew about the candidate (memory, never destiny).
+    return Gate(
+        config=config,
+        extra_checks=[make_registry_check(set(config["official_domains"]))],
+        graph_memory=GraphMemory.from_env(),
+    )
 
 
 def cmd_sweep(hub: DataHub, beat_name: str | None) -> None:
