@@ -23,6 +23,7 @@ import json
 from pathlib import Path
 
 from hunter_engine.gate import Gate, run_gate
+from hunter_engine.graph_context import install_briefing
 from hunter_engine.graph_memory import GraphMemory
 from hunter_engine.store import DataHub
 from hunter_engine.agents.scouts import run_scout
@@ -264,6 +265,16 @@ def main() -> None:
         elif args.cmd == "digest":
             cmd_digest(hub, voice=not args.no_voice)
         elif args.cmd == "day":
+            # The cast gets its briefing before anyone acts: organization
+            # memory assembled from this engine's own DataHub. Kit absent
+            # (no DATAHUB_GMS, empty graph, GMS down) -> agents run exactly
+            # as before, and we say which it was.
+            kit = install_briefing("free-money-hunter")
+            if kit is not None:
+                print(f"== briefing: {kit.total} archive records in context "
+                      f"({kit.verified} verified / {kit.rejected} rejected) ==")
+            else:
+                print("== briefing: none (archive unavailable) — agents run unbriefed ==")
             cmd_sweep(hub, None)
             cmd_verify(hub)
             cmd_hunt_scams(hub)
